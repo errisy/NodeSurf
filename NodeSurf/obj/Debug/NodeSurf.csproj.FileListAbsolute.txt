@@ -1,0 +1,6 @@
+C:\Users\Jack\Documents\Visual Studio 2015\Projects\NodeSurf\NodeSurf\bin\NodeSurf.dll.config
+C:\Users\Jack\Documents\Visual Studio 2015\Projects\NodeSurf\NodeSurf\bin\NodeSurf.dll
+C:\Users\Jack\Documents\Visual Studio 2015\Projects\NodeSurf\NodeSurf\bin\NodeSurf.pdb
+C:\Users\Jack\Documents\Visual Studio 2015\Projects\NodeSurf\NodeSurf\obj\Debug\NodeSurf.csprojResolveAssemblyReference.cache
+C:\Users\Jack\Documents\Visual Studio 2015\Projects\NodeSurf\NodeSurf\obj\Debug\NodeSurf.dll
+C:\Users\Jack\Documents\Visual Studio 2015\Projects\NodeSurf\NodeSurf\obj\Debug\NodeSurf.pdb
