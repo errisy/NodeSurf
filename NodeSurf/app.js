@@ -1,4 +1,5 @@
 "use strict";
+var fs = require("fs");
 var http = require("http");
 var PDB;
 (function (PDB) {
@@ -31,24 +32,26 @@ var PDB;
         return File;
     }());
 })(PDB || (PDB = {}));
-var Analyze = function (chain) {
+// need to test hydrophobicFactor from 1.2 to 2.0;
+var Analyze = function (chain, hydrophobicFactor) {
     return function (value) {
         var str = PDBParser.parsePDB(value);
         for (var keyChain in str.chainDict) {
             if (keyChain.toUpperCase() == chain.toUpperCase()) {
                 var entry = new SurfaceSearchEntry();
-                entry.chain = str.chainDict[keyChain];
+                //entry.residues = str.;
                 var options = new SurfaceSearchOptions();
                 options.hydrophilicFactor = 0.75;
-                options.hydrophobicFactor = 1.5;
-                for (var keyResidue in entry.chain.residueDict) {
-                    entry.residue = entry.chain.residueDict[keyResidue];
-                    var res = SurfaceSearch.Test(entry, options);
-                    console.log(keyResidue, res);
-                }
+                options.hydrophobicFactor = hydrophobicFactor;
             }
         }
     };
 };
-PDB.Download('1a2z', Analyze('A'));
+var files = fs.readdirSync('./');
+files.filter(function (file) {
+    if (file.toLowerCase().lastIndexOf('.pdb') > -1) {
+        return true;
+    }
+});
+//PDB.Download('1a2z', Analyze('A', 1.2)); 
 //# sourceMappingURL=app.js.map

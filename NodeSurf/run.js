@@ -20,7 +20,8 @@ var builder = (function () {
                 console: console,
                 require: require,
                 process: process,
-                module: module
+                module: module,
+                Buffer: Buffer
             });
             var _script = vm.createScript(_this.data.join('\n'));
             var fn = _script.runInContext(context);
@@ -34,6 +35,6 @@ app.append('proteinutil.js');
 app.append('geometry.js');
 app.append('geometry2.js');
 app.append('surface.js');
-app.append('app.js');
+app.append('slave.js');
 app.runInMemory();
 //# sourceMappingURL=run.js.map

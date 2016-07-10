@@ -7,7 +7,7 @@ class PDBParser {
 
     static parsePDB(value: string): Structure {
 
-        console.log('start parsing');
+        //console.log('start parsing');
         var lines = value.split('\n');
         
         var ptnHeader = /^ATOM/ig;
@@ -171,13 +171,14 @@ class Residue {
     public index: number;
     public atoms: Atom[] = [];
     public name: string;
-
+    //the following are local calculation variables;
+    public PseudoBetaDepth: number;
+    public Depth: number;
     public GetBounds3d() {
         var bounds  = new Bounds3D();
         this.atoms.forEach((atom) => bounds.Includes(atom.position));
         return bounds;
     }
-    public PseudoBetaDepth: number;
     public GetPseudoBetaCarbonPosition = (): Vector3D => {
         var CA = this.AtomByName('CA');
         var C = this.AtomByName('C');
@@ -217,7 +218,6 @@ class Residue {
         });
         return new Vector3D(x / count, y / count, z / count);
     }
-    public Depth: number;
     public SearchDepth = () => {
         if (this.name == 'G') {
             this.Depth = this.PseudoBetaDepth;
@@ -608,6 +608,7 @@ class Atom {
     residueIndex: number;
     insertion: string;
     position: Vector3D = new Vector3D(); 
+    //local calculation variables:
     public Depth: number;
     get GetRadiusLiMinimumSet():number {
         return SurfaceSearch.RadiusLiMinimumSet(this.name, this.type);
@@ -622,7 +623,7 @@ function LogCallback(value: boolean) {
  
 class SurfaceSearchEntry {
     public residue: Residue; 
-    public chain: Chain;
+    public residues: Residue[];
 }
 
 class SurfaceSearchOptions {
@@ -683,12 +684,14 @@ class SurfaceSearch {
     static Search(entry: SurfaceSearchEntry, options: SurfaceSearchOptions): PolyhedronBuilder2[] {
         var PolyhedronBuilers: PolyhedronBuilder2[] = [];
         var rs = entry.residue;
-        var pc = entry.chain;
+        var pc = entry.residues;
         var reach: number = (SurfaceSearch.RadiusLiMinimumSet('S', 'CG') + 0.33) * 2.0;
         var rsBounds = rs.GetBounds3d();
         rsBounds.Expand(-reach, reach, -reach, reach, -reach, reach);
-        var includeList = entry.chain.atoms.filter((atom) => (atom.name == 'C' || atom.type == 'N' || atom.type == 'O') && rsBounds.Contains(atom.position));
-        
+        var includeList: Atom[] = [];
+        entry.residues.forEach(_rd => _rd.atoms.forEach(atom => {
+            if ((atom.name == 'C' || atom.type == 'N' || atom.type == 'O') && rsBounds.Contains(atom.position)) includeList.push(atom);
+        }));
         if (rs.name == 'G') {
             rs.PseudoBetaDepth = 0.00;
             var atp = rs.GetPseudoBetaCarbonPosition();
@@ -790,12 +793,15 @@ class SurfaceSearch {
 
     static Test(entry: SurfaceSearchEntry, options: SurfaceSearchOptions): boolean {
         var rs = entry.residue;
-        var pc = entry.chain;
-        var reach: number = (SurfaceSearch.RadiusLiMinimumSet('S', 'CG') + 0.33) * 2.0;
+        var pc = entry.residues;
+        var reach: number = (SurfaceSearch.RadiusLiMinimumSet('S', 'CG') + options.testRadius * 2) * 2.0;
         var rsBounds = rs.GetBounds3d();
         rsBounds.Expand(-reach, reach, -reach, reach, -reach, reach);
-        var includeList = entry.chain.atoms.filter((atom) => (atom.name == 'C' || atom.type == 'N' || atom.type == 'O') && rsBounds.Contains(atom.position));
-
+        var includeList: Atom[] = [];
+        entry.residues.forEach(_rd => _rd.atoms.forEach(atom => {
+            if ((atom.name == 'C' || atom.type == 'N' || atom.type == 'O') && rsBounds.Contains(atom.position)) includeList.push(atom);
+        }));
+        console.log('included: ', includeList.length);
         if (rs.name == 'G') {
             //rs.PseudoBetaDepth = 0.00;
             var atp = rs.GetPseudoBetaCarbonPosition();

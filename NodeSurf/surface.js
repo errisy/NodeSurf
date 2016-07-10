@@ -4,7 +4,7 @@ var PDBParser = (function () {
     function PDBParser() {
     }
     PDBParser.parsePDB = function (value) {
-        console.log('start parsing');
+        //console.log('start parsing');
         var lines = value.split('\n');
         var ptnHeader = /^ATOM/ig;
         var titles = lines.filter(function (line) { return /^TITLE/ig.IsMatch(line); }).map(function (line) { return line.replace(/^TITLE\s{5}/ig, '').replace(/^TITLE\s{4}\d{1}\s/ig, '').replace(/^TITLE\s{3}\d{2}\s/ig, ''); });
@@ -672,11 +672,15 @@ var SurfaceSearch = (function () {
     SurfaceSearch.Search = function (entry, options) {
         var PolyhedronBuilers = [];
         var rs = entry.residue;
-        var pc = entry.chain;
+        var pc = entry.residues;
         var reach = (SurfaceSearch.RadiusLiMinimumSet('S', 'CG') + 0.33) * 2.0;
         var rsBounds = rs.GetBounds3d();
         rsBounds.Expand(-reach, reach, -reach, reach, -reach, reach);
-        var includeList = entry.chain.atoms.filter(function (atom) { return (atom.name == 'C' || atom.type == 'N' || atom.type == 'O') && rsBounds.Contains(atom.position); });
+        var includeList = [];
+        entry.residues.forEach(function (_rd) { return _rd.atoms.forEach(function (atom) {
+            if ((atom.name == 'C' || atom.type == 'N' || atom.type == 'O') && rsBounds.Contains(atom.position))
+                includeList.push(atom);
+        }); });
         if (rs.name == 'G') {
             rs.PseudoBetaDepth = 0.00;
             var atp = rs.GetPseudoBetaCarbonPosition();
@@ -782,11 +786,16 @@ var SurfaceSearch = (function () {
     };
     SurfaceSearch.Test = function (entry, options) {
         var rs = entry.residue;
-        var pc = entry.chain;
-        var reach = (SurfaceSearch.RadiusLiMinimumSet('S', 'CG') + 0.33) * 2.0;
+        var pc = entry.residues;
+        var reach = (SurfaceSearch.RadiusLiMinimumSet('S', 'CG') + options.testRadius * 2) * 2.0;
         var rsBounds = rs.GetBounds3d();
         rsBounds.Expand(-reach, reach, -reach, reach, -reach, reach);
-        var includeList = entry.chain.atoms.filter(function (atom) { return (atom.name == 'C' || atom.type == 'N' || atom.type == 'O') && rsBounds.Contains(atom.position); });
+        var includeList = [];
+        entry.residues.forEach(function (_rd) { return _rd.atoms.forEach(function (atom) {
+            if ((atom.name == 'C' || atom.type == 'N' || atom.type == 'O') && rsBounds.Contains(atom.position))
+                includeList.push(atom);
+        }); });
+        console.log('included: ', includeList.length);
         if (rs.name == 'G') {
             //rs.PseudoBetaDepth = 0.00;
             var atp = rs.GetPseudoBetaCarbonPosition();

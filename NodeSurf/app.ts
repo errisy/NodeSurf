@@ -29,27 +29,33 @@ module PDB {
     }
 }
 
-let Analyze = function (chain: string) {
-
+// need to test hydrophobicFactor from 1.2 to 2.0;
+let Analyze = function (chain: string, hydrophobicFactor: number ) {
     return function (value: string) {
         let str = PDBParser.parsePDB(value);
         for (let keyChain in str.chainDict) {
             if (keyChain.toUpperCase() == chain.toUpperCase()) {
                 let entry = new SurfaceSearchEntry();
-                entry.chain = str.chainDict[keyChain];
+                //entry.residues = str.;
                 let options = new SurfaceSearchOptions();
                 options.hydrophilicFactor = 0.75;
-                options.hydrophobicFactor = 1.5;
-                for (let keyResidue in entry.chain.residueDict) {
-                    entry.residue = entry.chain.residueDict[keyResidue];
-                    let res: boolean = SurfaceSearch.Test(entry, options);
-                    console.log(keyResidue, res);
-                }
+                options.hydrophobicFactor = hydrophobicFactor;
+                //for (let keyResidue in entry.chain.residueDict) {
+                //    entry.residue = entry.chain.residueDict[keyResidue];
+                //    let res: boolean = SurfaceSearch.Test(entry, options);
+                //    console.log(entry.residue.name + entry.residue.index, res);
+                //}
             }
         }
     }
 }
 
+let files = fs.readdirSync('./');
 
+files.filter(file => {
+    if (file.toLowerCase().lastIndexOf('.pdb') > -1) {
+        return true;
+    }
+})
 
-PDB.Download('1a2z', Analyze('A'));
+//PDB.Download('1a2z', Analyze('A', 1.2));

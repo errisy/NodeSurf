@@ -28,8 +28,13 @@
     <TypeScriptCompile Include="app.ts" />
     <TypeScriptCompile Include="geometry.ts" />
     <TypeScriptCompile Include="geometry2.ts" />
+    <TypeScriptCompile Include="master.ts" />
+    <TypeScriptCompile Include="mmt.ts" />
     <TypeScriptCompile Include="node.d.ts" />
     <TypeScriptCompile Include="proteinutil.ts" />
+    <TypeScriptCompile Include="run.ts" />
+    <TypeScriptCompile Include="service.ts" />
+    <TypeScriptCompile Include="slave.ts" />
     <TypeScriptCompile Include="stringutil.ts" />
     <TypeScriptCompile Include="surface.ts" />
   </ItemGroup>
