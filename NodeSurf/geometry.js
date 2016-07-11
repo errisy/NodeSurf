@@ -87,6 +87,9 @@ var Vector3D = (function () {
         this.subtract = function (value) {
             return new Vector3D(_this.x - value.x, _this.y - value.y, _this.z - value.z);
         };
+        this.dotProduct = function (value) {
+            return _this.x * value.x + _this.y * value.y + _this.z * value.z;
+        };
         this.orthogonalWith = function (that) {
             //if (this.x == 0 && this.y == 0 && this.z == 0) throw 'host vector is 0';
             //var tLength = target.length;

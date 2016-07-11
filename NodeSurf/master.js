@@ -68,7 +68,7 @@ var MasterController;
                 var working = [];
                 var current = moment.duration(moment().diff(moment('2016-01-01 00:00:00'))).asSeconds();
                 _this.working.forEach(function (child) {
-                    if ((current - child.lastVisit) > 10) {
+                    if ((current - child.lastVisit) > 240) {
                         console.log('Recycled: ', child.path);
                         _this.waiting.push(child);
                     }

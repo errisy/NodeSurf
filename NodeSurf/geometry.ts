@@ -101,6 +101,9 @@ class Vector3D {
     get lengthSquared(): number {
         return this.x * this.x + this.y * this.y + this.z * this.z;
     }
+    public dotProduct = (value: Vector3D): number => {
+        return this.x * value.x + this.y * value.y + this.z * value.z;
+    }
     public orthogonalWith = (that: Vector3D): Vector3D => {
         //if (this.x == 0 && this.y == 0 && this.z == 0) throw 'host vector is 0';
         //var tLength = target.length;

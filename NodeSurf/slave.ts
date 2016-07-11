@@ -78,7 +78,7 @@ module SlaveController {
     }
     class SlaveClient extends Client {
         constructor(data: IPathResult) {
-            super('http:', '192.168.137.3', '/', 48524, 'JSON', 'POST', 'application/json', JSON.stringify(data));
+            super('http:', '192.168.137.3', '/', 48524, 'JSON', 'POST', 'application/json', JSON.stringify(data)); //'192.168.137.3' localhost
         }
         static parseResidue = (_residue: Residue): Residue => {
             let residue = new Residue();
