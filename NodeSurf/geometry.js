@@ -139,6 +139,14 @@ var Vector3D = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Vector3D.prototype, "base", {
+        get: function () {
+            var _length = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+            return new Vector3D(this.x / _length, this.y / _length, this.z / _length);
+        },
+        enumerable: true,
+        configurable: true
+    });
     Vector3D.sum = function () {
         var vectors = [];
         for (var _i = 0; _i < arguments.length; _i++) {
@@ -300,6 +308,12 @@ var DirectionalSurface3D = (function () {
 var Edge = (function () {
     function Edge() {
     }
+    /**
+     * Tell whether the crossing line of two surface is too far away from the box;
+     * @param fe1
+     * @param fe2
+     * @param radius
+     */
     Edge.isOutOfBox = function (fe1, fe2, radius) {
         //var direction = fe1.orthogonalWith(fe2);
         var sqrBase = fe2.Y * fe1.Z - fe1.Y * fe2.Z;
@@ -313,6 +327,27 @@ var Edge = (function () {
                 fe1.C * fe1.C * (fe2.X * fe2.X + rp3) -
                 3 * radius * radius * (fe2.X * fe2.X * rp1 + sqr2 - 2 * fe1.X * fe2.X * rp2 + fe1.X * fe1.X * rp3));
         return canGetLine < -0.0001;
+    };
+    /**
+     * This algorithm takes the advantages of calculating the angle between two surface.
+     * If the angle is 0 or PI, the surfaces are parallel and return false;
+     * If the angle is in between 0 and PI, the distance can be simply calculating by solving two triangles
+     * @param fe1
+     * @param fe2
+     * @param radius
+     */
+    Edge.isOutOfBoxByRad = function (fe1, fe2, radius) {
+        var CosDelta = fe1.NormalizedDirection.dotProduct(fe1.NormalizedDirection);
+        //return false if it is parallel
+        if (Math.abs(CosDelta - 1) < 0.0001)
+            return false;
+        if (Math.abs(CosDelta + 1) < 0.0001)
+            return false;
+        var A = fe1.Origin.length;
+        var B = fe2.Origin.length;
+        // distance^2
+        var D2 = (A * A + B * B - 2 * A * B * CosDelta) / (1 - CosDelta * CosDelta);
+        return D2 > 3 * radius * radius;
     };
     return Edge;
 }());

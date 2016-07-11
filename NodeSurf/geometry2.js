@@ -2,20 +2,33 @@ var PolyhedronBuilder2 = (function () {
     function PolyhedronBuilder2(center, atomRadius, waterRadius, options, hydrophilic) {
         var _this = this;
         this.Surfaces = [];
+        /**The collection for subtracting surfaces*/
+        this.SubtractingSurfaces = [];
         this.TrySubtract = function (subtractAtomPosition, subtractAtomRadius) {
             var sur = DirectionalSurface3D2.TryGetDirectionalSurface(_this.AtomRadius, subtractAtomPosition.subtract(_this.Center), subtractAtomRadius, _this.WaterRadius, _this.options, _this.hydrophilic);
+            //if (sur) this.Surfaces.push(sur);
+            if (typeof sur == 'string')
+                return false;
+            //the surface should be checked here
+            //if the surface is not inside any of others, it will be added to the SubtractingSurfaces;
             if (sur)
-                _this.Surfaces.push(sur);
+                _this.checkSubtractingSurfaces(sur);
+            return true;
         };
         this.IsEmpty = function (isDebugging) {
             //this is where we can add additional optimization codes
             //var Vertices: Vector3D[] = [];
             //var count = 0;
-            _this.reduceByProjection();
-            var point = _this.Surfaces.someCombinationCheck2(3, function (item1, item2) { return Edge.isOutOfBox(item1, item2, _this.boxUnit); }, function (com) {
+            //put all SubtractingSurfaces into Surfaces;
+            _this.SubtractingSurfaces.forEach(function (surface) { return _this.Surfaces.push(surface); });
+            var boxUnit = _this.boxUnit;
+            var point = _this.Surfaces.someCombinationCheck2(3, function (item1, item2) { return Edge.isOutOfBoxByRad(item1, item2, boxUnit); }, function (com) {
+                //this may not be any advantage. solving vertex and determine whether it is greater than the boxUnit should be faster.
+                //if (Edge.isOutOfBoxByRad(com[0], com[2], boxUnit)) return false;
+                //if (Edge.isOutOfBoxByRad(com[1], com[2], boxUnit)) return false;
                 var p = Vertex.TryGetVertex(com[0], com[1], com[2]);
                 if (p) {
-                    if ((Math.abs(p.x) <= (_this.boxUnit)) && (Math.abs(p.y) <= (_this.boxUnit)) && (Math.abs(p.z) <= (_this.boxUnit)) && (p.length >= _this.boxUnit)) {
+                    if ((Math.abs(p.x) <= (boxUnit)) && (Math.abs(p.y) <= (boxUnit)) && (Math.abs(p.z) <= (boxUnit)) && (p.length >= boxUnit)) {
                         if (_this.Surfaces.every(function (surf) {
                             if (com.indexOf(surf) > -1)
                                 return true;
@@ -44,6 +57,73 @@ var PolyhedronBuilder2 = (function () {
             //}
             return !point;
             //return count == 0;
+        };
+        /**Algorithm that uses circle project to reduce the number of surface*/
+        this.reduceByCircle = function () {
+            // the distance from Origin to Center of the chord (OC) can be used to calculate the sweeping radius
+            // OC/boxUnit = Cos[Radius]
+            //how to tell if the center of another circle is inside one cirlce or not?
+            // OC1 OC2
+            // Use the direction, the Cos[Delta] can be worked out
+            // Cos[Delta] = DotProduct[Direction(OC1), Direction(OC2)]
+            // if Cos[Delta] < Cos[Radius1] then OC2 is inside OC1
+            //how to tell if the whole another circle is inside one circle or not?
+            // Delta < Radius1 And Delta + Radius2 > Radius1
+            var reduced = [];
+            _this.Surfaces.forEach(function (surface) {
+                var furtherReduced = [];
+                if (reduced.some(function (existing) {
+                    var delta = Math.acos(existing.NormalizedDirection.dotProduct(surface.NormalizedDirection));
+                    if (existing.ProjectionRadius > delta + surface.ProjectionRadius) {
+                        //surface is inside existing
+                        //there will be no need to modify reduced as surface won't be added to the furtherReduced
+                        return true;
+                    }
+                    if (surface.ProjectionRadius > delta + existing.ProjectionRadius) {
+                    }
+                    else {
+                        //in this case, both surface and existing shall be added to the furtherReduced
+                        furtherReduced.push(existing);
+                    }
+                    return false;
+                })) {
+                }
+                else {
+                    //when surface is not inside any of the existing;
+                    //add surface to furtherReduced;
+                    furtherReduced.push(surface);
+                    //replace reduced with furtherReduced;
+                    reduced = furtherReduced;
+                }
+            });
+            //console.log('Circle reduced: ', reduced.length, ' from ', this.Surfaces.length);
+            _this.Surfaces = reduced;
+        };
+        this.checkSubtractingSurfaces = function (surface) {
+            var furtherReduced = [];
+            if (_this.SubtractingSurfaces.some(function (existing) {
+                var delta = Math.acos(existing.NormalizedDirection.dotProduct(surface.NormalizedDirection));
+                if (existing.ProjectionRadius > delta + surface.ProjectionRadius) {
+                    //surface is inside existing
+                    //there will be no need to modify reduced as surface won't be added to the furtherReduced
+                    return true;
+                }
+                if (surface.ProjectionRadius > delta + existing.ProjectionRadius) {
+                }
+                else {
+                    //in this case, both surface and existing shall be added to the furtherReduced
+                    furtherReduced.push(existing);
+                }
+                return false;
+            })) {
+            }
+            else {
+                //when surface is not inside any of the existing;
+                //add surface to furtherReduced;
+                furtherReduced.push(surface);
+                //replace reduced with furtherReduced;
+                _this.SubtractingSurfaces = furtherReduced;
+            }
         };
         /**Algorithm that uses projection to reduce the number of surface*/
         this.reduceByProjection = function () {
@@ -190,7 +270,7 @@ var PolyhedronBuilder2 = (function () {
                 }
                 reduced.push(surface);
             });
-            //console.log('Number of reduced: ', reduced.length, ' from ', this.Surfaces.length);
+            console.log('Square reduced: ', reduced.length, ' from ', _this.Surfaces.length);
             _this.Surfaces = reduced;
         };
         this.Center = center;
@@ -207,6 +287,8 @@ var PolyhedronBuilder2 = (function () {
             ds.C = boxUnit;
             ds.Origin = ds.multiplyAsVector3D(boxUnit);
             ds.Direction = ds.multiplyAsVector3D(-1);
+            ds.NormalizedDirection = ds.Direction.base;
+            ds.ProjectionRadius = 0;
         }), set(new DirectionalSurface3D2(), function (ds) {
             ds.X = -1.0;
             ds.Y = 0.0;
@@ -214,6 +296,8 @@ var PolyhedronBuilder2 = (function () {
             ds.C = boxUnit;
             ds.Origin = ds.multiplyAsVector3D(boxUnit);
             ds.Direction = ds.multiplyAsVector3D(-1);
+            ds.NormalizedDirection = ds.Direction.base;
+            ds.ProjectionRadius = 0;
         }), set(new DirectionalSurface3D2(), function (ds) {
             ds.X = 0.0;
             ds.Y = 1.0;
@@ -221,6 +305,8 @@ var PolyhedronBuilder2 = (function () {
             ds.C = boxUnit;
             ds.Origin = ds.multiplyAsVector3D(boxUnit);
             ds.Direction = ds.multiplyAsVector3D(-1);
+            ds.NormalizedDirection = ds.Direction.base;
+            ds.ProjectionRadius = 0;
         }), set(new DirectionalSurface3D2(), function (ds) {
             ds.X = 0.0;
             ds.Y = -1.0;
@@ -228,6 +314,8 @@ var PolyhedronBuilder2 = (function () {
             ds.C = boxUnit;
             ds.Origin = ds.multiplyAsVector3D(boxUnit);
             ds.Direction = ds.multiplyAsVector3D(-1);
+            ds.NormalizedDirection = ds.Direction.base;
+            ds.ProjectionRadius = 0;
         }), set(new DirectionalSurface3D2(), function (ds) {
             ds.X = 0.0;
             ds.Y = 0.0;
@@ -235,6 +323,8 @@ var PolyhedronBuilder2 = (function () {
             ds.C = boxUnit;
             ds.Origin = ds.multiplyAsVector3D(boxUnit);
             ds.Direction = ds.multiplyAsVector3D(-1);
+            ds.NormalizedDirection = ds.Direction.base;
+            ds.ProjectionRadius = 0;
         }), set(new DirectionalSurface3D2(), function (ds) {
             ds.X = 0.0;
             ds.Y = 0.0;
@@ -242,6 +332,8 @@ var PolyhedronBuilder2 = (function () {
             ds.C = boxUnit;
             ds.Origin = ds.multiplyAsVector3D(boxUnit);
             ds.Direction = ds.multiplyAsVector3D(-1);
+            ds.NormalizedDirection = ds.Direction.base;
+            ds.ProjectionRadius = 0;
         }));
     }
     PolyhedronBuilder2.prototype.toString = function () {
@@ -394,7 +486,7 @@ var DirectionalSurface3D2 = (function () {
         var SubtractRadius = (SubtractAtomRadius + WaterRadius) * options.hydrophobicFactor;
         var pXYZsquare = DisplacementToCenterAtom.lengthSquared;
         if (pXYZsquare == 0)
-            throw 'overlapping atom';
+            return 'overlapping';
         //var dis = SubtractCenter.multiplyBy(-1);;
         if (DisplacementToCenterAtom.length > CenterRadius + SubtractRadius)
             return null;
@@ -413,6 +505,9 @@ var DirectionalSurface3D2 = (function () {
         ds3D.Origin = DisplacementToCenterAtom.multiplyBy(CrossPointFactor);
         //Make the direction facing to the Origin (Zero);
         ds3D.Direction = DisplacementToCenterAtom.multiplyBy(-1);
+        //Radius projection methods to reduce number of surface
+        ds3D.NormalizedDirection = ds3D.Direction.base;
+        ds3D.ProjectionRadius = Math.acos(ds3D.Origin.length / CenterRadius);
         return ds3D;
     };
     DirectionalSurface3D2.prototype.isInSurface = function (point) {

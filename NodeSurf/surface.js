@@ -820,9 +820,11 @@ var SurfaceSearch = (function () {
                 }
                 else {
                     //console.log(rs.name + rs.index + '-' + '%B' + ' test with : ' + SpecificList.length);
-                    SpecificList.forEach(function (pat) {
-                        ph.TrySubtract(pat.position, pat.GetRadiusLiMinimumSet);
-                    });
+                    if (!SpecificList.forEach(function (pat) { return ph.TrySubtract(pat.position, pat.GetRadiusLiMinimumSet); })) {
+                        rs.IsSurface = false;
+                        return false;
+                    }
+                    ;
                     if (ph.IsEmpty()) {
                         rs.IsSurface = false;
                         return false;
@@ -862,9 +864,8 @@ var SurfaceSearch = (function () {
                             if (pat !== at && pat.position.subtract(atp).lengthSquared < TotalReach * TotalReach)
                                 SpecificList.push(pat);
                         });
-                        SpecificList.forEach(function (pat) {
-                            ph.TrySubtract(pat.position, pat.GetRadiusLiMinimumSet);
-                        });
+                        if (!SpecificList.every(function (pat) { return ph.TrySubtract(pat.position, pat.GetRadiusLiMinimumSet); }))
+                            break;
                         if (ph.IsEmpty()) {
                             break;
                         }

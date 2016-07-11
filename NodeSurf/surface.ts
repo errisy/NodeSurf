@@ -826,9 +826,10 @@ class SurfaceSearch {
                 }
                 else {
                     //console.log(rs.name + rs.index + '-' + '%B' + ' test with : ' + SpecificList.length);
-                    SpecificList.forEach((pat) => {
-                        ph.TrySubtract(pat.position, pat.GetRadiusLiMinimumSet);
-                    });
+                    if (!SpecificList.forEach((pat) => ph.TrySubtract(pat.position, pat.GetRadiusLiMinimumSet))) {
+                        rs.IsSurface = false;
+                        return false;
+                    };
                     if (ph.IsEmpty()) {
                         rs.IsSurface = false;
                         return false;
@@ -867,9 +868,7 @@ class SurfaceSearch {
                             var TotalReach = pat.GetRadiusLiMinimumSet * options.hydrophobicFactor + AtomReach;
                             if (pat !== at && pat.position.subtract(atp).lengthSquared < TotalReach * TotalReach) SpecificList.push(pat);
                         });
-                        SpecificList.forEach((pat) => {
-                            ph.TrySubtract(pat.position, pat.GetRadiusLiMinimumSet)
-                        });
+                        if (!SpecificList.every((pat) => ph.TrySubtract(pat.position, pat.GetRadiusLiMinimumSet))) break;
 
                         if (ph.IsEmpty()) {
                             break;
