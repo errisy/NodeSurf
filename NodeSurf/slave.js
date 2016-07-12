@@ -92,7 +92,7 @@ var SlaveController;
                 searchEntry.residues = _this.entry.residues;
                 searchEntry.residue = _this.entry.residues.filter(function (residue) { return residue.index == _this.entry.residue; })[0];
                 var options = new SurfaceSearchOptions();
-                options.hydrophobicFactor = 1.5; // Number(this.entry.factor);
+                options.hydrophobicFactor = Number(_this.entry.factor);
                 options.hydrophilicFactor = 0.75;
                 var res = SurfaceSearch.Test(searchEntry, options);
                 var result = {};

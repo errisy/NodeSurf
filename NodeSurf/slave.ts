@@ -128,7 +128,7 @@ module SlaveController {
             searchEntry.residues = this.entry.residues;
             searchEntry.residue = this.entry.residues.filter(residue => residue.index == this.entry.residue)[0];
             let options = new SurfaceSearchOptions();
-            options.hydrophobicFactor = 1.5;// Number(this.entry.factor);
+            options.hydrophobicFactor = Number(this.entry.factor);
             options.hydrophilicFactor = 0.75;
 
             let res: boolean = SurfaceSearch.Test(searchEntry, options);
