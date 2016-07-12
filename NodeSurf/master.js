@@ -351,8 +351,8 @@ var MasterController;
                         }
                     }
                 var next = (_this.root.require());
-                console.log('Next: ', next.path);
                 if (next) {
+                    console.log('Next: ', next.path);
                     var entry = {};
                     entry.path = next.path;
                     entry.factor = next.parent.id;

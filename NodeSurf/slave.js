@@ -79,6 +79,8 @@ var SlaveController;
             var _this = this;
             _super.call(this, 'http:', '192.168.137.3', '/', 48524, 'JSON', 'POST', 'application/json', JSON.stringify(data)); //'192.168.137.3' localhost
             this.onComplete = function (entry) {
+                if (!entry.residues)
+                    return;
                 entry.residues = entry.residues.map(function (residue) { return SlaveClient.parseResidue(residue); });
                 //console.log(entry.residue, entry.residues.length);
                 _this.entry = entry;

@@ -356,8 +356,8 @@ module MasterController {
                 }
             }
             let next: ResidueTask = <any>(this.root.require());
-            console.log('Next: ', next.path);
             if (next) {
+                console.log('Next: ', next.path);
                 let entry: IPathEntry = <any>{};
                 entry.path = next.path;
                 entry.factor = next.parent.id;

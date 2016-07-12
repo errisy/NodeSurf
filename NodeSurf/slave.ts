@@ -113,14 +113,12 @@ module SlaveController {
         }
         public onComplete = (entry: IPathEntry) => {
 
-            
+
+            if (!entry.residues) return;
             entry.residues = entry.residues.map(residue => SlaveClient.parseResidue(residue));
             //console.log(entry.residue, entry.residues.length);
             this.entry = entry;
             //deserialize entry;
-            
-            
-
             this.finsh()
         }
         public entry: IPathEntry;
@@ -142,6 +140,5 @@ module SlaveController {
             let slave = new SlaveClient(result);
         }
     }
-
     let start = new SlaveClient(<any>{});
 }
